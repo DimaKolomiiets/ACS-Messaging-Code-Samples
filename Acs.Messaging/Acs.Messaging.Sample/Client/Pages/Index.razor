@@ -1,0 +1,33 @@
+﻿@page "/"
+@using Acs.Messaging.Sample.Client.Components
+@using Acs.Messaging.Sample.Shared
+@inherits BaseWithHub
+
+<PageTitle>ACS SMS - Home</PageTitle>
+
+@if (State?.PhoneNumbers == null)
+{
+    <Loading />
+}
+
+<div class="indexContainer">
+    <div class="head">
+    </div>
+
+    <div class="body">
+        @if (State?.PhoneNumbers != null)
+        {
+            foreach (var phoneNumber in State.PhoneNumbers)
+            {
+                var link = $"text/{phoneNumber}";
+
+                <NavLink class="nav-link" href=@link Match="NavLinkMatch.All">
+                    <span class="oi oi-dashboard" aria-hidden="true"></span> @Utils.FormatPhoneNumber(phoneNumber)
+                </NavLink>
+            }
+        }
+    </div>
+
+    <div class="foot">
+    </div>
+</div>

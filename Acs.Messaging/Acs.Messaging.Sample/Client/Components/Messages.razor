@@ -1,0 +1,75 @@
+﻿@using Acs.Messaging.Sample.Client.Components
+@using Acs.Messaging.Sample.Shared.Models
+@inherits BaseWithHub
+
+<div class="bg-gray px-4 py-2 bg-light contactBox">
+    @if (!string.IsNullOrEmpty(State?.CurrentContact?.ImageUri))
+    {
+        <img src="@State?.CurrentContact?.ImageUri" alt="user" width="50" class="rounded-circle" />
+    }
+    <h5 class="header">@(State?.CurrentContact?.Name ?? "Contact") @State?.CurrentContact?.PhoneDisplay</h5>
+</div>
+
+<div class="messageList">
+
+    @if (State?.Messages != null &&
+         State.CurrentContact?.PhoneNumber != null)
+    {
+        var messagesByContact = State.Messages.GetByPhone(State.CurrentContact.PhoneNumber);
+
+        if (messagesByContact != null)
+        {
+            foreach (var messagesByDay in messagesByContact)
+            {
+                <div class="message title small">
+                    @messagesByDay.Key.ToString("dd.MM.yyyy")
+                </div>
+                @foreach (var message in messagesByDay.Value)
+                {
+                    <div class="message @cssClassByCirection(message)">
+                        @message.MessageText
+                        <p class="small text-muted">@message.CreatedAt.ToLocalTime().ToString("HH:mm:ss")</p>
+                    </div>
+                }
+            }
+        }
+    }
+</div>
+
+<div class="bg-light">
+    <div class="input-group">
+        <input type="text" placeholder="Type a message" aria-describedby="button-addon2"
+               class="form-control rounded-0 border-0 py-4 bg-light"
+               @bind="messageInput"
+               @onkeyup="MessageKeyPress" />
+        <div class="input-group-append">
+            <button type="submit" class="btn btn-link" @onclick=SendSms disabled="@(!HubClient?.IsConnected)">
+                <img src="/img/Send.svg" alt="user" width="50" class="rounded-circle" />
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string? messageInput = null;
+
+    private string cssClassByCirection(Message message) => message.Direction == MessageDirection.Inbound ? "in" : message.Direction == MessageDirection.Outbound? "out" : "";
+
+    private async Task MessageKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SendSms();
+        }
+    }
+
+    private async Task SendSms()
+    {
+        if (SmsClient != null)
+        {
+            await SmsClient.SendSms(messageInput);
+
+            messageInput = "";
+        }
+    }
+}

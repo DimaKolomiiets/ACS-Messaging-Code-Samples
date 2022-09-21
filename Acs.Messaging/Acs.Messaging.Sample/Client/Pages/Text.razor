@@ -1,0 +1,52 @@
+﻿@page "/text/{UserPhoneNumber}"
+@page "/text"
+@using Acs.Messaging.Sample.Client.Components
+@using Acs.Messaging.Sample.Shared.Models
+@inherits BaseWithHub
+
+<PageTitle>ACS SMS - Text</PageTitle>
+
+@if (State?.PhoneNumbers == null || State?.Participants?.Count == 0)
+{
+    <Loading />
+}
+
+<div class="indexContainer">
+    <div class="head">
+    </div>
+
+    <div class="body">
+        <Chat />
+    </div>
+
+    <div class="foot">
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string? UserPhoneNumber { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (State != null)
+        {
+            if (string.IsNullOrEmpty(UserPhoneNumber))
+            {
+                UserPhoneNumber = State.User?.PhoneNumber;
+            }
+
+            if (State.User != null)
+                State.User.PhoneNumber = UserPhoneNumber;
+
+            if (State.Participants.Count == 0)
+            {
+                State.AddParticipant(new Participant() { PhoneNumber = "+17759648317", Name = "Bob" });
+                State.AddParticipant(new Participant() { PhoneNumber = "+18442482778", Name = "Alice" });
+                State.AddParticipant(new Participant() { PhoneNumber = "+14255550123", Name = "Terry" });
+            }
+        }
+    }
+}
